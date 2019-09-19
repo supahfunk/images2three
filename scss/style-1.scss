@@ -17,15 +17,9 @@ body {
   overflow: hidden;
 }
 
-#app {
-  height: 100vh;
+.container {
   text-align: center;
   padding: 15px;
-  height: calc(100 * var(--vh));
-  overflow-y: scroll;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: none;
-  overscroll-behavior-x: none;
 }
 
 .image-fx {
@@ -33,7 +27,7 @@ body {
   max-width: calc(100% - 60px);
   height: auto;
   margin: 30px;
-  opacity: 0.3;
+  opacity: 0;
 }
 
 canvas {

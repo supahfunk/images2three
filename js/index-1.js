@@ -1,5 +1,7 @@
-import './style.scss'
+import '/scss/style-1.scss'
 import * as THREE from 'three'
+import * as noiseImage from '/img/noise.png'
+import LocomotiveScroll from 'locomotive-scroll'
 
 console.clear()
 
@@ -35,14 +37,18 @@ class Dom2webgl {
       aspect: window.innerWidth / window.innerHeight
     }
 
-    this.scrollY = 0
-    
-    this.uniforms = {
-      uImage: new THREE.Uniform(null),
-      uImageRes: new THREE.Uniform(new THREE.Vector2(1, 1)),
-      uViewSize: new THREE.Uniform(new THREE.Vector2(1, 1)),
+    this.scroll = {
+      y: 0,
+      oldY: 0,
+      speed: 0,
     }
-    
+    this.mouse = {
+      x: 0,
+      y: 0,
+      speed: 0
+    }
+    this.time = null
+
     this.initialize()
     this.events()
   }
@@ -117,17 +123,33 @@ class Dom2webgl {
         this.loader.style.width = `${loaded / this.images.length * 200}px`
         if (loaded === this.images.length) {
           this.loader.style.opacity = 0
-          this.canvas.style.opacity = 1
-          console.log('loaded')
+          this.canvas.style.opacity = 1          
+          this.createMaterial()
           this.images.forEach((i, index) => {
             this.createMesh(i)
           })
-          window.scrollTo(0, 0)
           this.render()
         }
       })
       img.src = i.src
     })
+  }
+
+
+  /*------------------------------
+  Create Material
+  ------------------------------*/
+  createMaterial() {
+    this.geometry = new THREE.PlaneBufferGeometry(1, 1, 120, 120)
+    this.geometry.verticesNeedUpdate = true
+
+    this.vertShader = document.getElementById('vertexShader').innerHTML
+    this.fragShader = document.getElementById('fragmentShader').innerHTML
+
+    this.textureNoise = new THREE.TextureLoader().load( noiseImage.default )
+    this.textureNoise.magFilter = THREE.NearestFilter
+    this.textureNoise.minFilter = THREE.LinearFilter
+    this.textureNoise.wrapS = this.textureNoise.wrapT = THREE.RepeatWrapping
   }
   
   
@@ -135,30 +157,55 @@ class Dom2webgl {
   Create Mesh
   ------------------------------*/
   createMesh(i) {
-    var vertShader = document.getElementById('vertexShader').innerHTML
-    var fragShader = document.getElementById('fragmentShader').innerHTML
-    const texture = new THREE.TextureLoader().load( i.src )
-    texture.magFilter = THREE.NearestFilter
-    texture.minFilter = THREE.LinearFilter
-    const geometry = new THREE.PlaneBufferGeometry(1, 1, 8, 8)
+    const textureImage = new THREE.TextureLoader().load( i.src )
+    textureImage.magFilter = THREE.NearestFilter
+    textureImage.minFilter = THREE.LinearFilter
+    // textureImage.wrapS = textureImage.wrapT = THREE.RepeatWrapping
+
     const material = new THREE.ShaderMaterial({
-      vertexShader: vertShader,
-      fragmentShader: fragShader,
+      vertexShader: this.vertShader,
+      fragmentShader: this.fragShader,
       uniforms: {
         uImage: {
           type: "t",
-          value: texture
+          value: textureImage
+        },
+        uNoise: {
+          type: "t",
+          value: this.textureNoise
+        },
+        uTime: {
+          type: "f",
+          value: performance.now()
+        },
+        uSpeed: {
+          type: "f",
+          value: this.scroll.speed
+        },
+        uRandom: {
+          type: "f",
+          value: -100 + Math.random() * 100
+        },
+        uResolution : {
+          type : "v2",
+          value : new THREE.Vector2(window.innerWidth, window.innerHeight)
+              .multiplyScalar(window.devicePixelRatio)
+        },
+        uMouse : {
+          type : "v2",
+          value : new THREE.Vector2(0.7 * window.innerWidth, window.innerHeight)
+              .multiplyScalar(window.devicePixelRatio)
         }
       },
       side: THREE.DoubleSide,
     })
-    console.log('material', material)
-    const mesh = new THREE.Mesh(geometry, material)
-    geometry.verticesNeedUpdate = true
+
+    const mesh = new THREE.Mesh(this.geometry, material)
     this.meshes.push({
       img: i,
       mesh
     })
+
     this.resizeMesh(i, mesh)
     this.scene.add(mesh)
   }
@@ -189,13 +236,24 @@ class Dom2webgl {
   Render
   ------------------------------*/
   render() {
-    window.requestAnimationFrame(this.render.bind(this))
-    this.scene.position.y = this.scrollY * this.viewSize.height / this.opt.height
-    
-    this.scene.children.forEach((i, index) => {
-      i.rotation.x = (this.scrollY + index * 40) * 0.003
+    this.time = performance.now()
+
+    // Scroll
+    this.scroll.y = scroll.scroll.instance.scroll.y
+    this.scroll.speed = (this.scroll.y - this.scroll.oldY) * 0.09
+    this.scene.position.y = this.scroll.y * this.viewSize.height / this.opt.height
+    this.scroll.oldY = this.scroll.y
+
+    // Uniform
+    this.meshes.forEach((i, index) => {
+      i.mesh.material.uniforms.uTime.value = this.time
+      i.mesh.material.uniforms.uSpeed.value = this.scroll.speed
     })
+
+    // Render Scene
     this.renderer.render(this.scene, this.camera)
+
+    window.requestAnimationFrame(this.render.bind(this))
   }
   
   
@@ -204,9 +262,6 @@ class Dom2webgl {
   ------------------------------*/
   events() {
     window.addEventListener('resize', this.resizeCanvas.bind(this))
-    document.getElementById('app').addEventListener('scroll', () => {
-      this.scrollY = document.getElementById('app').scrollTop
-    })
   }
   
   
@@ -223,6 +278,10 @@ class Dom2webgl {
 /*--------------------
 Init
 --------------------*/
+const scroll = new LocomotiveScroll({
+  el: document.querySelector('#app'),
+  smooth: true,
+});
 const fx = new Dom2webgl({
   canvas: document.querySelector('#canvas'),
   images: document.querySelectorAll('.image-fx'),

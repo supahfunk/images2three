@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/supahfunk/images2three#readme",
   "dependencies": {
+    "locomotive-scroll": "^3.1.5",
     "sass": "^1.22.12",
     "three": "^0.108.0"
   }

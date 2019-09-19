@@ -1,0 +1,71 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <div id="loading"></div>
+  <div id="app">
+    <div class="container">
+        <img src="https://source.unsplash.com/collection/112/800x300" alt="" class="image-fx">
+        <img src="https://source.unsplash.com/collection/113/800x400" alt="" class="image-fx">
+        <img src="https://source.unsplash.com/collection/114/800x400" alt="" class="image-fx">
+        <img src="https://source.unsplash.com/collection/115/800x400" alt="" class="image-fx">
+        <img src="https://source.unsplash.com/collection/116/800x400" alt="" class="image-fx">
+        <img src="https://source.unsplash.com/collection/117/800x400" alt="" class="image-fx">
+        <img src="https://source.unsplash.com/collection/118/800x400" alt="" class="image-fx">
+    </div>
+  </div>
+  <canvas id="canvas"></canvas>
+  
+  <script id="vertexShader" type="x-shader/x-vertex">
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    varying vec3 vNormal;
+    uniform sampler2D uNoise;
+    uniform float uRandom;
+    uniform float uSpeed;
+    // uniform float u_time;
+
+    void main() {
+      vUv = uv;
+      vPosition = position;
+      vec4 map = texture2D( uNoise, vUv );
+      vec3 pos = position;
+      pos.y += map.y * uSpeed * 0.06;
+
+      vec3 textureRain = texture2D(uNoise, vec2(uv.x, uv.y * 0.003)).rgb/8.0;
+
+      pos.y += textureRain.y * abs(uSpeed * 0.2);
+
+      vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );
+      gl_Position = projectionMatrix * mvPosition;
+      // gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+    }
+  </script>
+  <script id="fragmentShader" type="x-shader/x-fragment">
+      uniform sampler2D uImage;
+      uniform sampler2D uNoise;
+      uniform float uTime;
+      uniform float uRandom;
+      uniform float uSpeed;
+      varying vec2 vUv;
+      void main() {
+        vec2 uv = vUv;
+        float time = uTime;
+        vec4 image = texture2D(uImage, uv);
+        vec4 noise = texture2D(uNoise, uv);
+        vec3 textureRain = texture2D(uNoise, vec2(uv.x + uRandom, uv.y * 0.003)).rgb/8.0;
+        vec2 rainDrops = vec2(uv.x, uv.y - textureRain.x * uSpeed);
+        vec3 textureImage = texture2D(uImage, rainDrops).rgb;
+
+        gl_FragColor = vec4(textureImage, 1.);
+        gl_FragColor = image;
+        
+      }
+  </script>
+  <script type="text/javascript" src="/js/index-1.js"></script>
+</body>
+</html>
