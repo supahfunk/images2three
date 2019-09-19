@@ -36,9 +36,8 @@
       vec3 pos = position;
       pos.y += map.y * uSpeed * 0.06;
 
-      vec3 textureRain = texture2D(uNoise, vec2(uv.x, uv.y * 0.003)).rgb/8.0;
-
-      pos.y += textureRain.y * abs(uSpeed * 0.2);
+      vec3 textureNoise = texture2D(uNoise, vec2(uv.x, uv.y * 0.003)).rgb/8.0;
+      pos.y += textureNoise.y * abs(uSpeed * 0.2);
 
       vec4 mvPosition = modelViewMatrix * vec4( pos, 1.0 );
       gl_Position = projectionMatrix * mvPosition;
@@ -56,14 +55,13 @@
         vec2 uv = vUv;
         float time = uTime;
         vec4 image = texture2D(uImage, uv);
-        vec4 noise = texture2D(uNoise, uv);
-        vec3 textureRain = texture2D(uNoise, vec2(uv.x + uRandom, uv.y * 0.003)).rgb/8.0;
-        vec2 rainDrops = vec2(uv.x, uv.y - textureRain.x * uSpeed);
-        vec3 textureImage = texture2D(uImage, rainDrops).rgb;
+        // vec4 noise = texture2D(uNoise, uv);
+        // vec3 textureRain = texture2D(uNoise, vec2(uv.x + uRandom, uv.y * 0.003)).rgb/8.0;
+        // vec2 rainDrops = vec2(uv.x, uv.y - textureRain.x * uSpeed);
+        // vec3 textureImage = texture2D(uImage, rainDrops).rgb;
 
-        gl_FragColor = vec4(textureImage, 1.);
+        // gl_FragColor = vec4(textureImage, 1.);
         gl_FragColor = image;
-        
       }
   </script>
   <script type="text/javascript" src="/js/index-1.js"></script>
