@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <div id="loading"></div>
+  <div id="app">
+    <div class="container">
+        <div class="text-wrap">
+          <h1>
+            Lorem ipsum dolor sit amet consectetur adipisicing elit
+          </h1>
+        </div>
+        <div class="align-center">
+          <img src="https://images.unsplash.com/photo-1569267652577-43debd1219c2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="" class="image-fx">
+        </div>
+        <div class="text-wrap">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Et tempore sed, harum ab consequatur consectetur maxime odio repellendus recusandae, eaque ex molestiae. Facere voluptatem eos a, expedita exercitationem impedit quidem dolor officiis dolorum unde corporis, libero labore neque quasi voluptates repudiandae delectus eaque corrupti. Perferendis nisi sapiente eos beatae consectetur illum repellendus eveniet, officia possimus necessitatibus id sequi aut, temporibus ex ab quis architecto, doloremque sint? 
+        </div>
+        <div class="wrap-fx">
+          <video width="1024"  height="576" autoplay loop muted="" controls playsinline class="image-fx" crossorigin="anonymous">
+            <source src="https://www.studiogusto.com/en/wp-content/uploads/sites/2/2017/10/brunellocucinelli.mp4">
+          </video>
+          <a href="#" class="btn-play">PLAY</a>
+        </div>
+        <div class="text-wrap">
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Et tempore sed, harum ab consequatur consectetur maxime odio repellendus recusandae, eaque ex molestiae. Facere voluptatem eos a, expedita exercitationem impedit quidem dolor officiis dolorum unde corporis, libero labore neque quasi voluptates repudiandae delectus eaque corrupti. Perferendis nisi sapiente eos beatae consectetur illum repellendus eveniet, officia possimus necessitatibus id sequi aut, temporibus ex ab quis architecto, doloremque sint? 
+        </div>
+        <div class="align-center">
+          <img src="https://images.unsplash.com/photo-1569267614922-750a438e3d47?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80" alt="" class="image-fx">
+        </div>
+        <div class="align-center">
+          <img src="https://images.unsplash.com/photo-1569267483408-06f938e15034?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=80" alt="" class="image-fx">
+        </div>
+        <div class="align-center">
+          <img src="https://images.unsplash.com/photo-1569267552473-440e5e08ee8c?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="" class="image-fx">
+        </div>
+        <div class="align-center">
+          <img src="https://images.unsplash.com/photo-1569267461252-7abff786a704?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60" alt="" class="image-fx">
+        </div>
+    </div>
+  </div>
+  <canvas id="canvas"></canvas>
+  
+  <script id="vertexShader" type="x-shader/x-vertex">
+    varying vec2 vUv;
+    varying vec3 vPosition;
+    varying vec3 vNormal;
+    uniform sampler2D uNoise;
+    uniform float uRandom;
+    uniform float uSpeed;
+    uniform float uTime;
+
+    void main() {
+      vUv = uv;
+      vec3 position2 = position;
+      float speed = uSpeed;
+      float random = uRandom;
+      float time = (uTime) * 0.0005 + uRandom;
+
+      float xValue = 0.01;
+      float yValue = 0.003;
+
+      // position2.y += sin(((time + uRandom) * 0.005) - (position.x * 3.) + (position.y * 4.)) * xValue * speed;
+      // position2.x += sin(((time + uRandom) * 0.005) - (position.x * 3.) + (position.y * 4.)) * xValue * speed;
+
+      // Semplice wave Y senza tempo
+       position2.y += sin(position.x * 3.) * speed * 0.02;
+
+
+      // Bolla x
+      // position2.x += sin(position.x * 3. + position.y * 4.) * speed * 0.005;
+
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position2,1.0);
+    }
+  </script>
+  <script id="fragmentShader" type="x-shader/x-fragment">
+      uniform sampler2D uImage;
+      uniform float uTime;
+      uniform float uRandom;
+      uniform float uSpeed;
+      varying vec2 vUv;
+
+      void main() {
+        vec2 uv = vUv;
+        float time = uTime;
+        vec4 image = texture2D(uImage, uv);
+        gl_FragColor = image;
+      }
+  </script>
+  <script type="text/javascript" src="/js/index-4.js"></script>
+</body>
+</html>
