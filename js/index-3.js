@@ -1,26 +1,10 @@
 import * as THREE from 'three'
 import createjs from 'preload-js'
 import LocomotiveScroll from 'locomotive-scroll'
+
 import '/scss/style-3.scss'
 
 console.clear()
-
-/*------------------------------
-Range
-------------------------------*/
-const range = (value, x1, y1, x2, y2) => (value - x1) * (y2 - x2) / (y1 - x1) + x2
-
-
-/*------------------------------
-IsInViewport
-------------------------------*/
-const isInViewport = (elem) => {
-	const b = elem.getBoundingClientRect()
-	return (
-		b.top + b.height >= 0 &&
-    b.bottom - b.height <= window.innerHeight
-	)
-}
 
 
 /*------------------------------
@@ -52,15 +36,15 @@ class Dom2webgl {
     this.initialize()
     this.events()
   }
-  
-  
+
+
   /*------------------------------
   Create Scene
   ------------------------------*/
-  createScene(){
+  createScene() {
     this.scene = new THREE.Scene()
     this.scene.position.needsUpdate = true
-    
+
     this.camera = new THREE.PerspectiveCamera(30, this.opt.aspect, 1, 10000)
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
@@ -73,9 +57,9 @@ class Dom2webgl {
     this.camera.lookAt = this.scene.position
     this.camera.target = new THREE.Vector3(0, 0, 0)
     this.viewSize = this.getViewSize()
-   }
-  
-  
+  }
+
+
   /*------------------------------
   Get View Size
   ------------------------------*/
@@ -86,34 +70,34 @@ class Dom2webgl {
     )
     return { width: height * this.camera.aspect, height }
   }
-  
-  
+
+
   /*------------------------------
   Resize
   ------------------------------*/
-  resizeCanvas(){
+  resizeCanvas() {
     // window.scrollTo(0, 0)
     this.opt.width = window.innerWidth
     this.opt.height = window.innerHeight
-    
+
     this.opt.aspect = this.opt.width / this.opt.height
     this.camera.aspect = this.opt.aspect
     this.camera.updateProjectionMatrix()
     this.camera.position.z = 180 / this.camera.aspect
-    
+
     this.viewSize = this.getViewSize()
     this.meshes.forEach(i => {
       this.resizeMesh(i.img, i.mesh)
     })
-    
+
     this.renderer.setSize(this.opt.width, this.opt.height)
   }
 
-  
+
   /*------------------------------
   Load All Images
   ------------------------------*/
-  loadAllImages(){
+  loadAllImages() {
     const queue = new createjs.LoadQueue(false)
     const assets = []
     queue.on('complete', () => {
@@ -141,7 +125,7 @@ class Dom2webgl {
     queue.loadManifest(assets)
     queue.on('progress', e => {
       this.loader.style.width = `${queue.progress * 200}px`
-		})
+    })
   }
 
 
@@ -155,21 +139,19 @@ class Dom2webgl {
     this.vertShader = document.getElementById('vertexShader').innerHTML
     this.fragShader = document.getElementById('fragmentShader').innerHTML
   }
-  
-  
+
+
   /*------------------------------
   Create Mesh
   ------------------------------*/
   createMesh(i) {
     const type = i.tagName.toLowerCase()
-    let textureImage = new THREE.TextureLoader().load( i.src )
+    let textureImage = new THREE.TextureLoader().load(i.src)
     if (type === 'video') {
       textureImage = new THREE.VideoTexture(i)
     }
     textureImage.magFilter = THREE.NearestFilter
     textureImage.minFilter = THREE.LinearFilter
-
-    window.console.log('textureImage ---->', textureImage)
     // textureImage.wrapS = textureImage.wrapT = THREE.RepeatWrapping
 
     const material = new THREE.ShaderMaterial({
@@ -192,15 +174,15 @@ class Dom2webgl {
           type: "f",
           value: -100 + Math.random() * 100
         },
-        uResolution : {
-          type : "v2",
-          value : new THREE.Vector2(window.innerWidth, window.innerHeight)
-              .multiplyScalar(window.devicePixelRatio)
+        uResolution: {
+          type: "v2",
+          value: new THREE.Vector2(this.opt.width, this.opt.height)
+            .multiplyScalar(window.devicePixelRatio)
         },
-        uMouse : {
-          type : "v2",
-          value : new THREE.Vector2(0.7 * window.innerWidth, window.innerHeight)
-              .multiplyScalar(window.devicePixelRatio)
+        uMouse: {
+          type: "v2",
+          value: new THREE.Vector2(0.7 * this.opt.width, this.opt.height)
+            .multiplyScalar(window.devicePixelRatio)
         }
       },
       side: THREE.DoubleSide,
@@ -216,8 +198,8 @@ class Dom2webgl {
     this.resizeMesh(i, mesh)
     this.scene.add(mesh)
   }
-  
-  
+
+
   /*------------------------------
   Resize Mesh
   ------------------------------*/
@@ -225,8 +207,18 @@ class Dom2webgl {
     const rect = i.getBoundingClientRect()
     const widthViewUnit = (rect.width * this.viewSize.width) / this.opt.width
     const heightViewUnit = (rect.height * this.viewSize.height) / this.opt.height
-    const xViewUnit = (i.offsetLeft * this.viewSize.width) / this.opt.width - this.viewSize.width / 2
-    const yViewUnit = (i.offsetTop * this.viewSize.height) / this.opt.height - this.viewSize.height / 2
+
+    // Se l'immagine/video è wrappato da div.video-wrap, l'offsetTop deve essere del parent
+    let offsetLeft = i.offsetLeft
+    let offsetTop = i.offsetTop
+
+    if (i.parentElement.classList.contains('wrap-fx')) {
+      offsetLeft = i.parentElement.offsetLeft + i.offsetLeft
+      offsetTop = i.parentElement.offsetTop + i.offsetTop
+    }
+    
+    const xViewUnit = (offsetLeft * this.viewSize.width) / this.opt.width - this.viewSize.width / 2
+    const yViewUnit = (offsetTop * this.viewSize.height) / this.opt.height - this.viewSize.height / 2
 
     mesh.scale.x = widthViewUnit
     mesh.scale.y = heightViewUnit
@@ -236,11 +228,26 @@ class Dom2webgl {
 
     mesh.position.x = x
     mesh.position.y = y
-
-    window.console.log('mesh.position.x ---->', mesh.position.y)
   }
 
-  
+
+  /*------------------------------
+  Percentage Seen
+  ------------------------------*/
+  percentageSeen(el) {
+    const bounds = el.getBoundingClientRect()
+    const top = bounds.top
+    const height = bounds.height
+
+    if (top > (this.scroll.y + this.opt.height)) {
+      return 0;
+    } else {
+      const percentage = Math.max(0, this.opt.height - (this.opt.height - top) + height)
+      return percentage
+    }
+  }
+
+
   /*------------------------------
   Render
   ------------------------------*/
@@ -254,7 +261,7 @@ class Dom2webgl {
     this.scroll.oldY = this.scroll.y
 
     // Uniform
-    this.meshes.forEach((i, index) => {
+    this.meshes.forEach((i) => {
       i.mesh.material.uniforms.uTime.value = this.time
       i.mesh.material.uniforms.uSpeed.value = this.scroll.speed
     })
@@ -264,16 +271,16 @@ class Dom2webgl {
 
     window.requestAnimationFrame(this.render.bind(this))
   }
-  
-  
+
+
   /*------------------------------
   Events
   ------------------------------*/
   events() {
     window.addEventListener('resize', this.resizeCanvas.bind(this))
   }
-  
-  
+
+
   /*------------------------------
   Initialize
   ------------------------------*/
