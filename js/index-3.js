@@ -1,7 +1,7 @@
-import '/scss/style-1.scss'
 import * as THREE from 'three'
-import * as noiseImage from '/img/noise.png'
+import createjs from 'preload-js'
 import LocomotiveScroll from 'locomotive-scroll'
+import '/scss/style-3.scss'
 
 console.clear()
 
@@ -114,25 +114,34 @@ class Dom2webgl {
   Load All Images
   ------------------------------*/
   loadAllImages(){
-    let loaded = 0
-    this.images.forEach((i, index) => {
-      const img = document.createElement('img')
-      img.crossOrigin = "anonymous"
-      img.onload = (() => {
-        loaded++
-        this.loader.style.width = `${loaded / this.images.length * 200}px`
-        if (loaded === this.images.length) {
-          this.loader.style.opacity = 0
-          this.canvas.style.opacity = 1          
-          this.createMaterial()
-          this.images.forEach((i, index) => {
-            this.createMesh(i)
-          })
-          this.render()
-        }
+    const queue = new createjs.LoadQueue(false)
+    const assets = []
+    queue.on('complete', () => {
+      this.loader.style.opacity = 0
+      this.canvas.style.opacity = 1
+      this.images.forEach(i => {
+        this.createMaterial()
+        this.createMesh(i)
       })
-      img.src = i.src
+      this.render()
     })
+
+    this.images.forEach((i, index) => {
+      const tag = i.tagName.toLowerCase()
+      const src = tag === 'img' ? i.src : i.querySelectorAll('source')[0].src
+      const type = tag === 'img' ? createjs.AbstractLoader.IMAGE : createjs.AbstractLoader.BINARY
+
+      assets.push({
+        id: index,
+        src: src,
+        type: type
+      })
+    })
+
+    queue.loadManifest(assets)
+    queue.on('progress', e => {
+      this.loader.style.width = `${queue.progress * 200}px`
+		})
   }
 
 
@@ -145,11 +154,6 @@ class Dom2webgl {
 
     this.vertShader = document.getElementById('vertexShader').innerHTML
     this.fragShader = document.getElementById('fragmentShader').innerHTML
-
-    this.textureNoise = new THREE.TextureLoader().load( noiseImage.default )
-    this.textureNoise.magFilter = THREE.NearestFilter
-    this.textureNoise.minFilter = THREE.LinearFilter
-    this.textureNoise.wrapS = this.textureNoise.wrapT = THREE.RepeatWrapping
   }
   
   
@@ -157,9 +161,15 @@ class Dom2webgl {
   Create Mesh
   ------------------------------*/
   createMesh(i) {
-    const textureImage = new THREE.TextureLoader().load( i.src )
+    const type = i.tagName.toLowerCase()
+    let textureImage = new THREE.TextureLoader().load( i.src )
+    if (type === 'video') {
+      textureImage = new THREE.VideoTexture(i)
+    }
     textureImage.magFilter = THREE.NearestFilter
     textureImage.minFilter = THREE.LinearFilter
+
+    window.console.log('textureImage ---->', textureImage)
     // textureImage.wrapS = textureImage.wrapT = THREE.RepeatWrapping
 
     const material = new THREE.ShaderMaterial({
@@ -169,10 +179,6 @@ class Dom2webgl {
         uImage: {
           type: "t",
           value: textureImage
-        },
-        uNoise: {
-          type: "t",
-          value: this.textureNoise
         },
         uTime: {
           type: "f",
@@ -198,6 +204,7 @@ class Dom2webgl {
         }
       },
       side: THREE.DoubleSide,
+      // wireframe: true,
     })
 
     const mesh = new THREE.Mesh(this.geometry, material)
@@ -229,6 +236,8 @@ class Dom2webgl {
 
     mesh.position.x = x
     mesh.position.y = y
+
+    window.console.log('mesh.position.x ---->', mesh.position.y)
   }
 
   

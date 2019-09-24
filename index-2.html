@@ -5,17 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
-<body>
+<body style="background: black">
   <div id="loading"></div>
   <div id="app">
     <div class="container">
-        <img src="https://source.unsplash.com/collection/112/800x700" alt="" class="image-fx">
-        <img src="https://source.unsplash.com/collection/113/800x1000" alt="" class="image-fx">
-        <img src="https://source.unsplash.com/collection/114/800x600" alt="" class="image-fx">
-        <img src="https://source.unsplash.com/collection/115/800x400" alt="" class="image-fx">
-        <img src="https://source.unsplash.com/collection/116/800x1000" alt="" class="image-fx">
-        <img src="https://source.unsplash.com/collection/117/800x800" alt="" class="image-fx">
-        <img src="https://source.unsplash.com/collection/118/800x800" alt="" class="image-fx">
+        <img src="https://raw.githubusercontent.com/supahfunk/supah-codepen/master/enough.png" alt="" class="image-fx">
     </div>
   </div>
   <canvas id="canvas"></canvas>
@@ -46,10 +40,13 @@
 
       vUv = uv;
       vec3 position2 = position;
-      // position2.y += sin(((uTime + uRandom) * 0.005) - (position.y * 3.)) * 0.01 * uSpeed;
-      position2.y += sin(((uTime + uRandom) * 0.005) - (position.y * 3.) - (position.x * 4.)) * 0.01 * uSpeed;
-      // position2.y += sin(((uTime + uRandom) * 0.005) - (position.y * 3.)) * 0.005 * uSpeed;
-      position2.x += sin(((uTime + uRandom) * 0.005) - (position.x * 3.) + (position.y * 4.)) * 0.005 * uSpeed;
+
+      
+      position2.x += sin((uTime * 0.0025) + (position.x * 2.)) * 0.1;
+      position2.y += cos((uTime * 0.0025) + (position.y * 2.)) * 0.1;
+      position2.z += sin(uTime * 0.0025) * position2.x;
+      
+      vPosition = position2;
       gl_Position = projectionMatrix * modelViewMatrix * vec4(position2,1.0);
     }
   </script>
@@ -59,17 +56,23 @@
       uniform float uTime;
       uniform float uRandom;
       uniform float uSpeed;
+      varying vec3 vPosition;
       varying vec2 vUv;
       void main() {
         vec2 uv = vUv;
-        float time = uTime;
-        vec4 image = texture2D(uImage, uv);
-        // vec4 noise = texture2D(uNoise, uv);
-        // vec3 textureRain = texture2D(uNoise, vec2(uv.x + uRandom, uv.y * 0.003)).rgb/8.0;
-        // vec2 rainDrops = vec2(uv.x, uv.y - textureRain.x * uSpeed);
-        // vec3 textureImage = texture2D(uImage, rainDrops).rgb;
+        float time = uTime * 0.0004;
+        // uv.x += (uv.y * sin(uTime * 0.001 ) * sin(uTime * 0.001 * uv.x) * -0.3);
 
-        // gl_FragColor = vec4(textureImage, 1.);
+        vec2 pos = uv;
+
+        // pos.x += sin(time) * 0.2 * sin(pos.y * pos.x * time);
+
+        vec4 image = texture2D(uImage, pos);
+
+        image.r += vPosition.x;
+        image.g += vPosition.x;
+        image.b +=  vPosition.z;
+
         gl_FragColor = image;
       }
   </script>
