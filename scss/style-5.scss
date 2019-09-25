@@ -1,0 +1,146 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  touch-action: none;
+}
+
+body {
+  width: 100%;
+  height: 100vh;
+  height: calc(100 * var(--vh));
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+  overflow: hidden;
+  font-family: sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: #333;
+  background: #fafafa;
+}
+
+#app {
+  position: relative;
+  z-index: 2;
+}
+
+h1 {
+  font-size: 50px;
+  line-height: 1.1;
+}
+
+.container {
+  text-align: center;
+  padding: 15px;
+}
+
+.text-fx {
+  font-size: 80px;
+  font-weight: bold;
+  line-height: 1.4;
+  color: black;
+  text-align: center;
+  font-family: sans-serif;
+}
+
+.text-wrap {
+  max-width: 800px;
+  margin: 200px auto;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.wrap-fx {
+  position: relative;
+
+  .btn-play {
+    position: absolute;
+    z-index: 1;
+    color: #333;
+    top: 50%;
+    left: 50%;
+    background: #fff;
+    width: 100px;
+    height: 100px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.3em;
+    line-height: 1;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: translate3d(-50%, -50%, 0);
+    text-decoration: none;
+
+    &:before {
+      content: '';
+      position: absolute;
+      z-index: -1;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      transform-origin: center;
+      background: #fff;
+      transition: transform .3s ease-in-out;
+    }
+
+
+    &:hover {
+      &:before {
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+.image-fx {
+  width: 800px;
+  max-width: calc(100% - 60px);
+  height: auto;
+  margin: 80px 30px;
+  opacity: 0;
+}
+
+video.image-fx {
+  width: 1200px;
+}
+
+canvas {
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  height: 0;
+  width: 100%;
+  height: 100vh;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity .2s ease-in-out .3s;
+  left: 50%;
+  transform: translate(-50%);
+}
+
+.canvas {
+  z-index: 100;
+  display: none;
+}
+
+#loading {
+  position: fixed;
+  z-index: 100;
+  top: 50%;
+  left: 50%;
+  margin-left: -100px;
+  width: 0;
+  height: 1px;
+  background: #000;
+  pointer-events: none;
+  transition: width .1s ease-in-out, opacity .2s ease-in-out .2s;
+}
