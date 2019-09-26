@@ -22,6 +22,7 @@ class Dom2webgl {
 
     this.scroll = {
       y: 0,
+      x: 0,
       oldY: 0,
       speed: 0,
     }
@@ -86,7 +87,7 @@ class Dom2webgl {
 
     this.viewSize = this.getViewSize()
     this.meshes.forEach(i => {
-      this.resizeMesh(i.img, i.mesh)
+      this.resizeMesh(i.el, i.mesh)
     })
 
     this.renderer.setSize(this.opt.width, this.opt.height)
@@ -147,13 +148,19 @@ class Dom2webgl {
   createMesh(i) {
     const type = i.tagName.toLowerCase()
     let textureImage = new THREE.TextureLoader().load(i.src)
+    let ratio = 1;
+
+    i.classList.add('fx')
 
     if (type === 'img') {
       textureImage = new THREE.TextureLoader().load(i.src)
+      ratio = i.naturalWidth / i.naturalHeight
     } else if (type === 'video') {
       textureImage = new THREE.VideoTexture(i)
+      ratio = i.width / i.height
     } else {
-      textureImage = new THREE.CanvasTexture(document.getElementById('canvas-0'))
+      textureImage = new THREE.CanvasTexture(document.getElementById(i.getAttribute('data-text')))
+      ratio = i.offsetWidth / i.offsetHeight
     }
     textureImage.magFilter = THREE.NearestFilter
     textureImage.minFilter = THREE.LinearFilter
@@ -179,6 +186,10 @@ class Dom2webgl {
           type: "f",
           value: -100 + Math.random() * 100
         },
+        uRatio: {
+          type: "f",
+          value: ratio,
+        },
         uResolution: {
           type: "v2",
           value: new THREE.Vector2(this.opt.width, this.opt.height)
@@ -196,7 +207,7 @@ class Dom2webgl {
 
     const mesh = new THREE.Mesh(this.geometry, material)
     this.meshes.push({
-      img: i,
+      el: i,
       mesh
     })
 
@@ -209,19 +220,13 @@ class Dom2webgl {
   Resize Mesh
   ------------------------------*/
   resizeMesh(i, mesh) {
-    window.console.log('i ---->', i, mesh)
+    
     const rect = i.getBoundingClientRect()
     const widthViewUnit = (rect.width * this.viewSize.width) / this.opt.width
     const heightViewUnit = (rect.height * this.viewSize.height) / this.opt.height
 
-    // Se l'immagine/video è wrappato da div.video-wrap, l'offsetTop deve essere del parent
-    let offsetLeft = i.offsetLeft
-    let offsetTop = i.offsetTop
-
-    if (i.parentElement.classList.contains('wrap-fx')) {
-      offsetLeft = i.parentElement.offsetLeft + i.offsetLeft
-      offsetTop = i.parentElement.offsetTop + i.offsetTop
-    }
+    let offsetLeft = rect.x - this.scroll.x
+    let offsetTop = rect.y - this.scroll.y
     
     const xViewUnit = (offsetLeft * this.viewSize.width) / this.opt.width - this.viewSize.width / 2
     const yViewUnit = (offsetTop * this.viewSize.height) / this.opt.height - this.viewSize.height / 2
@@ -266,12 +271,15 @@ class Dom2webgl {
   createText() {
     const texts = document.querySelectorAll('.text-fx')
     texts.forEach((i, index) => {
+      i.setAttribute('data-text', `canvas-${index}`)
       const canvasText = document.createElement('canvas')
       canvasText.id = `canvas-${index}`
       canvasText.classList.add('canvas')
       document.documentElement.appendChild(canvasText)
       
       const { width, height, color, fontSize, fontStyle, fontWeight, fontFamily, lineHeight, textAlign } = window.getComputedStyle(i)
+
+      i.classList.add('fx')
       
       canvasText.style.height = height
       canvasText.style.width = width
@@ -329,6 +337,7 @@ class Dom2webgl {
 
     // Scroll
     this.scroll.y = scroll.scroll.instance.scroll.y
+    this.scroll.x = scroll.scroll.instance.scroll.x
     this.scroll.speed = (this.scroll.y - this.scroll.oldY) * 0.02
     this.scene.position.y = this.scroll.y * this.viewSize.height / this.opt.height
     this.scroll.oldY = this.scroll.y
@@ -338,7 +347,6 @@ class Dom2webgl {
       i.mesh.material.uniforms.uTime.value = this.time
       i.mesh.material.uniforms.uSpeed.value = this.scroll.speed
     })
-
 
     // this.meshes[6].mesh.rotation.y = this.scroll.y * 0.01
     
@@ -373,7 +381,8 @@ Init
 const scroll = new LocomotiveScroll({
   el: document.querySelector('#app'),
   smooth: true,
-});
+  smoothMobile: true,
+})
 const fx = new Dom2webgl({
   canvas: document.querySelector('#canvas'),
   images: document.querySelectorAll('.image-fx'),

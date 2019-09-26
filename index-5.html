@@ -11,7 +11,7 @@
   <div id="app">
     <div class="container">
         <div class="text-wrap">
-          <h1>
+          <h1 class="text-fx">
             Lorem ipsum dolor sit amet consectetur adipisicing elit
           </h1>
         </div>
@@ -56,6 +56,7 @@
     uniform sampler2D uNoise;
     uniform float uRandom;
     uniform float uSpeed;
+    uniform float uRatio;
     uniform float uTime;
 
     void main() {
@@ -68,11 +69,12 @@
       float xValue = 0.01;
       float yValue = 0.003;
 
+
       // position2.y += sin(((time + uRandom) * 0.005) - (position.x * 13.) + (position.y * 4.)) * xValue * speed;
       // position2.x += sin(((time + uRandom) * 0.005) - (position.x * 3.) + (position.y * 4.)) * xValue * speed;
 
       // Semplice wave Y senza tempo
-      position2.y += sin(position.x * 8.) * speed * 0.02;
+      position2.y += sin(position.x * 5.) * speed * 0.02 * uRatio;
 
 
       // Bolla x

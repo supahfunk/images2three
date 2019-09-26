@@ -1,0 +1,49 @@
+body {
+  font-family: 'Oswald', sans-serif;
+  font-size: 100px;
+  color: #444;
+  user-select: none;
+}
+
+.line {
+  position: relative;
+  z-index: 1;
+  height: 114px;
+  
+  &:nth-child(2) {
+    .up, .down {
+    }
+  }
+  &:nth-child(3) {
+    .up, .down {
+    }
+  }
+}
+
+
+.up, .down {
+  line-height: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+  transition: transform .9s cubic-bezier(0.69, 0.01, 0, 0.99);
+}
+
+.up {
+  transform-origin: 0 100%;
+}
+
+
+.down {
+  transform: scaleY(0);
+}
+
+.swipe {
+  .up {
+    transform: scaleY(0);
+  }
+  .down {
+  transform: scaleY(1);
+  }
+}

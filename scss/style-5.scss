@@ -46,6 +46,10 @@ h1 {
   font-family: sans-serif;
 }
 
+.text-fx.fx {
+  color: rgba(0, 0, 0, 0);
+}
+
 .text-wrap {
   max-width: 800px;
   margin: 200px auto;
@@ -106,7 +110,10 @@ h1 {
   max-width: calc(100% - 60px);
   height: auto;
   margin: 80px 30px;
-  opacity: 0;
+}
+
+.image-fx.fx {
+  visibility: hidden;
 }
 
 video.image-fx {
