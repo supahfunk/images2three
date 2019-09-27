@@ -86,6 +86,28 @@ class Dom2webgl {
     this.camera.position.z = 180 / this.camera.aspect
 
     this.viewSize = this.getViewSize()
+
+    // Elimino tutti i canvas e ricreo i testi
+    const removeTextIndex = []
+    this.meshes.forEach((i, index) => {
+      const tagName = i.el.tagName.toLowerCase()
+      if (tagName !== 'img' && tagName !== 'video') {
+        const canvas = document.getElementById(i.el.getAttribute('data-text'))
+        window.console.log('canvas ---->', canvas)
+        canvas.parentNode.removeChild(canvas)
+        this.scene.remove(i.mesh)
+        i.remove = true
+        i.el.classList.remove('fx')
+      }
+    })
+
+    // Rimuovo le mesh testuali
+    this.meshes = this.meshes.filter(i => i.remove === undefined)
+
+    // Ricreo i testi
+    this.createText()
+
+    // Resizo tutte le mesh
     this.meshes.forEach(i => {
       this.resizeMesh(i.el, i.mesh)
     })
@@ -220,7 +242,6 @@ class Dom2webgl {
   Resize Mesh
   ------------------------------*/
   resizeMesh(i, mesh) {
-    
     const rect = i.getBoundingClientRect()
     const widthViewUnit = (rect.width * this.viewSize.width) / this.opt.width
     const heightViewUnit = (rect.height * this.viewSize.height) / this.opt.height
