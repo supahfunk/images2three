@@ -22,7 +22,7 @@
     "preload-js": "^0.6.3",
     "preloadjs": "^1.0.1",
     "sass": "^1.22.12",
-    "three": "^0.108.0"
+    "three": "^0.125.0"
   },
   "devDependencies": {
     "cssnano": "^4.1.10",
